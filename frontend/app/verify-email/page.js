@@ -42,7 +42,7 @@ export default function VerifyEmailPage() {
     try {
       await signUp.attemptEmailAddressVerification({ code });
       setMessage("Email verified successfully!");
-      router.push("/home");
+      router.push("/dashboard");
     } catch (err) {
       console.error(err);
       setMessage("Invalid code. Please try again.");

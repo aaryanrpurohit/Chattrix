@@ -17,7 +17,7 @@ export default function CustomLoginPage() {
     const [error, setError] = useState('');
 
     const [isDark, setIsDark] = useState(false);
-    
+
 
     // On mount, safely access document
     useEffect(() => {
@@ -63,7 +63,7 @@ export default function CustomLoginPage() {
 
             if (result.status === 'complete') {
                 await setActive({ session: result.createdSessionId });
-                router.push('/home');
+                router.push('/dashboard');
             } else {
                 setError('Sign in failed. Please try again.');
             }
@@ -80,8 +80,8 @@ export default function CustomLoginPage() {
         try {
             await signIn.authenticateWithRedirect({
                 strategy: 'oauth_google',
-                redirectUrl: '/home',
-                redirectUrlComplete: '/home',
+                redirectUrl: '/dashboard',
+                redirectUrlComplete: '/dashboard',
             });
         } catch (err) {
             setError(err.errors?.[0]?.message || 'Google sign in failed');
@@ -94,8 +94,8 @@ export default function CustomLoginPage() {
         try {
             await signIn.authenticateWithRedirect({
                 strategy: 'oauth_github',
-                redirectUrl: '/home',
-                redirectUrlComplete: '/home',
+                redirectUrl: '/dashboard',
+                redirectUrlComplete: '/dashboard',
             });
         } catch (err) {
             setError(err.errors?.[0]?.message || 'GitHub sign in failed');

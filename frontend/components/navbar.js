@@ -1,129 +1,116 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
-import ThemeToggle from '../components/toggletheme2';
-import Image from 'next/image'
 
-export default function GlassmorphicNavbar() {
-  const [scrolled, setScrolled] = useState(false);
+import { useState, useEffect } from "react";
+import { Search, Bell, Settings, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import NotificationPanel from "./NotificationPanel";
 
-  // Add scroll effect for better glassmorphism
+export default function Navbar() {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const router = useRouter();
+
+//   Fetch notifications from backend
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/notifications"); // Replace with your Node.js backend URL
+      if (!res.ok) throw new Error("Failed to fetch notifications");
+      const data = await res.json();
+      setNotifications(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000); // refresh every 10s
+    return () => clearInterval(interval);
   }, []);
 
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const markAsRead = async (id) => {
+    try {
+      await fetch(`http://localhost:4000/notifications/${id}/read`, {
+        method: "POST",
+      });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <motion.nav
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "py-3" : "py-4"
-        }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          className={`rounded-2xl px-6 py-3 transition-all duration-300 ${scrolled ? "shadow-xl" : "shadow-lg"
-            }`}
-          style={{
-            background: scrolled
-              ? "rgba(255, 255, 255, 0.1)"
-              : "rgba(255, 255, 255, 0.05)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          }}
-        >
-          <div className="flex items-center justify-between">
-            {/* Logo Section */}
-            <motion.div
-              className="flex items-center space-x-3"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div
-                className="h-10 w-10 rounded-full flex items-center justify-center"
-                style={{
-                  boxShadow: "0 4px 15px rgba(139, 92, 246, 0.3)",
-                }}
-              >
-                <Image src="/assets/images/logo.png" width={40} height={40} alt="C" />
-              </div>
-              <span
-                className="font-bold text-xl hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-400"
-              >
-                Chattrix
-              </span>
-            </motion.div>
-            {/* Right Side - Theme Toggle and Join Button */}
-            <div className="flex items-center gap-4">
-              {/* Theme Toggle */}
-              <ThemeToggle />
-
-              {/* Sign In / Join Now Button */}
-              <SignedOut>
-                <SignInButton mode="redirect">
-                  {/* Clerk automatically handles redirecting; this button is only the visual wrapper */}
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="relative px-8 py-3 rounded-full font-semibold text-base overflow-hidden group"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(108, 99, 255, 0.9), rgba(99, 102, 241, 0.9))",
-                      color: "#ffffff",
-                      boxShadow: "0 4px 20px rgba(108, 99, 255, 0.3)",
-                    }}
-                    whileHover={{
-                      scale: 1.05,
-                      boxShadow: "0 6px 30px rgba(108, 99, 255, 0.5)",
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Join Now
-
-                    <motion.div
-                      className="absolute inset-0 -translate-x-full"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-                      }}
-                      animate={{
-                        translateX: ["-100%", "200%"],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "linear",
-                        repeatDelay: 1,
-                      }}
-                    />
-                  </motion.button>
-                </SignInButton>
-              </SignedOut>
-
-
-              {/* When signed in, show user menu */}
-              <SignedIn>
-                <UserButton afterSignOutUrl="/" />
-              </SignedIn>
-            </div>
-
-          </div>
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+      {/* Search + Hamburger */}
+      <div className="flex items-center justify-between w-full md:w-auto">
+        <div className="flex items-center bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full px-2 py-1 text-[var(--color-text)] flex-1 md:flex-none">
+          <Search size={25} className="mx-2" />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="p-2 bg-transparent outline-none text-[var(--color-text)] pr-15 placeholder:text-gray-400 w-full"
+          />
         </div>
+
+        <button
+          className="md:hidden p-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-accent)]/20 ml-2"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
-    </motion.nav>
+
+      {/* Right Icons */}
+      <div
+        className={`flex items-center space-x-4 mt-2 md:mt-0 ${
+          mobileMenuOpen ? "flex flex-col md:flex-row md:items-center" : "hidden md:flex"
+        }`}
+      >
+        {/* Notification */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="p-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-accent)]/20"
+          >
+            <Bell size={24} className="text-[var(--color-text)]" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[var(--color-accent)] text-[var(--color-text)] text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {showNotifications && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 w-80 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg z-50"
+              >
+                <NotificationPanel
+                  notifications={notifications}
+                  markAsRead={markAsRead}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Settings */}
+        <button
+          onClick={() => router.push("/settings")}
+          className="p-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-accent)]/20"
+        >
+          <Settings size={24} className="text-[var(--color-text)]" />
+        </button>
+      </div>
+    </div>
   );
 }

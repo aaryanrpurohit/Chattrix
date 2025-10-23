@@ -70,7 +70,7 @@ export default function CustomSignUpPage() {
 
       if (result.status === "complete" && result.createdSessionId) {
         await setActive({ session: result.createdSessionId });
-        router.push("/home");
+        router.push("/dashboard");
       } else if (result.status === "missing_requirements") {
         router.push("/verify-email");
       }
@@ -85,8 +85,8 @@ export default function CustomSignUpPage() {
     if (!isLoaded) return;
     await signUp.authenticateWithRedirect({
       strategy: "oauth_google",
-      redirectUrl: "/home",
-      redirectUrlComplete: "/home",
+      redirectUrl: "/dashboard",
+      redirectUrlComplete: "/dashboard",
     });
   };
 
@@ -94,8 +94,8 @@ export default function CustomSignUpPage() {
     if (!isLoaded) return;
     await signUp.authenticateWithRedirect({
       strategy: "oauth_github",
-      redirectUrl: "/home",
-      redirectUrlComplete: "/home",
+      redirectUrl: "/dashboard",
+      redirectUrlComplete: "/dashboard",
     });
   };
 

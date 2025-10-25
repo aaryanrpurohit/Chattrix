@@ -4,6 +4,7 @@ import {
   ClerkProvider
 } from '@clerk/nextjs'
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${poppins.variable} antialiased`}>
         <Analytics/>
+        <SpeedInsights/>
         {children}
       </body>
     </html>
